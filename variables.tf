@@ -18,7 +18,7 @@ variable "location" {
 variable "region" {
   description = "The region for the network. If the cluster is regional, this must be the same region. Otherwise, it should be the region of the zone."
   type        = string
-  default     = "europe-west1-b"
+  default     = "europe-west1"
 }
 
 variable "gcp_auth_file" {
