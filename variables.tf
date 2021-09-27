@@ -24,6 +24,7 @@ variable "region" {
 variable "gcp_auth_file" {
   type        = string
   description = "GCP authentication file"
+  default     = "/data/auth/a.json"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
