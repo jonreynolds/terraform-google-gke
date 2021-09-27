@@ -21,6 +21,11 @@ variable "region" {
   default     = "europe-west1-b"
 }
 
+variable "gcp_auth_file" {
+  type        = string
+  description = "GCP authentication file"
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL PARAMETERS
 # These parameters have reasonable defaults.
