@@ -144,11 +144,6 @@ resource "google_container_node_pool" "node_pool" {
     disk_type    = "pd-standard"
     preemptible  = false
 
-    service_account = module.gke_service_account.email
-
-    oauth_scopes = [
-      "https://www.googleapis.com/auth/cloud-platform",
-    ]
   }
 
   lifecycle {
@@ -160,21 +155,6 @@ resource "google_container_node_pool" "node_pool" {
     update = "30m"
     delete = "30m"
   }
-}
-
-# ---------------------------------------------------------------------------------------------------------------------
-# CREATE A CUSTOM SERVICE ACCOUNT TO USE WITH THE GKE CLUSTER
-# ---------------------------------------------------------------------------------------------------------------------
-
-module "gke_service_account" {
-  # When using these modules in your own templates, you will need to use a Git URL with a ref attribute that pins you
-  # to a specific version of the modules, such as the following example:
-  # source = "github.com/gruntwork-io/terraform-google-gke.git//modules/gke-service-account?ref=v0.2.0"
-  source = "./modules/gke-service-account"
-
-  name        = var.cluster_service_account_name
-  project     = var.project
-  description = var.cluster_service_account_description
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -203,48 +183,6 @@ module "vpc_network" {
   private_services_secondary_cidr_block  = var.private_services_secondary_cidr_block
   secondary_cidr_subnetwork_width_delta  = var.secondary_cidr_subnetwork_width_delta
   secondary_cidr_subnetwork_spacing      = var.secondary_cidr_subnetwork_spacing
-}
-
-# ---------------------------------------------------------------------------------------------------------------------
-# CONFIGURE KUBECTL AND RBAC ROLE PERMISSIONS
-# ---------------------------------------------------------------------------------------------------------------------
-
-# configure kubectl with the credentials of the GKE cluster
-resource "null_resource" "configure_kubectl" {
-  provisioner "local-exec" {
-    command = "gcloud beta container clusters get-credentials ${module.gke_cluster.name} --region ${var.region} --project ${var.project}"
-
-    # Use environment variables to allow custom kubectl config paths
-    environment = {
-      KUBECONFIG = var.kubectl_config_path != "" ? var.kubectl_config_path : ""
-    }
-  }
-
-  depends_on = [google_container_node_pool.node_pool]
-}
-
-resource "kubernetes_cluster_role_binding" "user" {
-  metadata {
-    name = "admin-user"
-  }
-
-  role_ref {
-    kind      = "ClusterRole"
-    name      = "cluster-admin"
-    api_group = "rbac.authorization.k8s.io"
-  }
-
-  subject {
-    kind      = "User"
-    name      = data.google_client_openid_userinfo.terraform_user.email
-    api_group = "rbac.authorization.k8s.io"
-  }
-
-  subject {
-    kind      = "Group"
-    name      = "system:masters"
-    api_group = "rbac.authorization.k8s.io"
-  }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
