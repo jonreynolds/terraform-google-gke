@@ -132,8 +132,6 @@ resource "google_container_node_pool" "node_pool" {
     disk_type    = "pd-standard"
     preemptible  = false
 
-    service_account = module.gke_service_account.email
-
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform",
     ]
